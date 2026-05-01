@@ -1,0 +1,175 @@
+// frontend/app/page.tsx
+import Link from 'next/link';
+import { ArrowRight, Brain, Code2, FileText, Bug, Users, Zap, Shield, BarChart3 } from 'lucide-react';
+
+export default function LandingPage() {
+  const features = [
+    {
+      icon: Code2,
+      title: 'AI Code Review',
+      description: 'Get instant, intelligent feedback on your code with severity ratings, line-by-line suggestions, and security analysis.',
+      color: 'text-blue-600',
+      bg: 'bg-blue-50 dark:bg-blue-950/30',
+    },
+    {
+      icon: FileText,
+      title: 'Doc Generator',
+      description: 'Auto-generate README, JSDoc, docstrings, and API docs from your code in seconds.',
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50 dark:bg-indigo-950/30',
+    },
+    {
+      icon: Bug,
+      title: 'Bug Tracker',
+      description: 'Kanban-style bug tracker with AI-suggested fixes to help your team squash bugs faster.',
+      color: 'text-rose-600',
+      bg: 'bg-rose-50 dark:bg-rose-950/30',
+    },
+    {
+      icon: Users,
+      title: 'Team Workspace',
+      description: 'Invite your team, assign roles, and collaborate in real-time with shared workspaces.',
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+    },
+    {
+      icon: Zap,
+      title: 'Real-time Updates',
+      description: 'Live collaboration with Socket.io — see review statuses, bug updates, and comments instantly.',
+      color: 'text-amber-600',
+      bg: 'bg-amber-50 dark:bg-amber-950/30',
+    },
+    {
+      icon: BarChart3,
+      title: 'Analytics Dashboard',
+      description: 'Track your team\'s productivity with detailed metrics, activity feeds, and trend analysis.',
+      color: 'text-cyan-600',
+      bg: 'bg-cyan-50 dark:bg-cyan-950/30',
+    },
+  ];
+
+  const stats = [
+    { value: '10x', label: 'Faster Code Reviews' },
+    { value: '90%', label: 'Bug Detection Rate' },
+    { value: '5min', label: 'Average Doc Generation' },
+    { value: '99.9%', label: 'Uptime SLA' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Nav */}
+      <nav className="sticky top-0 z-50 glass border-b">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Brain className="w-7 h-7 text-blue-600" />
+            <span className="text-xl font-bold gradient-text">DevMind</span>
+          </div>
+          <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
+            <a href="#features" className="hover:text-foreground transition-colors">Features</a>
+            <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
+            <a href="#docs" className="hover:text-foreground transition-colors">Docs</a>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/auth/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Sign in
+            </Link>
+            <Link href="/auth/register" className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+              Get Started <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="relative overflow-hidden py-24 px-6">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-cyan-500/10 blur-3xl rounded-full" />
+        </div>
+        <div className="max-w-4xl mx-auto text-center animate-fade-in">
+          <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 text-xs font-semibold px-3 py-1.5 rounded-full mb-6 border border-blue-200 dark:border-blue-800">
+            <Zap className="w-3 h-3" />
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
+            The AI Platform for{' '}
+            <span className="gradient-text">Developer Teams</span>
+          </h1>
+          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+            Code reviews, documentation, bug tracking — all supercharged with AI. 
+            Ship better software, faster.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/auth/register" className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3.5 rounded-xl transition-all hover:shadow-lg hover:shadow-blue-600/25">
+              Start for Free <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link href="/auth/login" className="flex items-center justify-center gap-2 bg-card border border-border hover:bg-accent text-foreground font-semibold px-8 py-3.5 rounded-xl transition-colors">
+              <Shield className="w-4 h-4" />
+              View Demo
+            </Link>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="max-w-3xl mx-auto mt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
+          {stats.map((stat) => (
+            <div key={stat.label} className="text-center">
+              <div className="text-3xl font-bold gradient-text">{stat.value}</div>
+              <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="py-24 px-6 bg-muted/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">Everything Your Team Needs</h2>
+            <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+              A complete developer productivity suite powered by state-of-the-art AI.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature) => (
+              <div key={feature.title} className="bg-card border border-border rounded-2xl p-6 card-hover">
+                <div className={`w-11 h-11 rounded-xl ${feature.bg} flex items-center justify-center mb-4`}>
+                  <feature.icon className={`w-5 h-5 ${feature.color}`} />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-24 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-12 text-white">
+            <Brain className="w-12 h-12 mx-auto mb-6 opacity-90" />
+            <h2 className="text-3xl font-bold mb-4">Ready to 10x Your Dev Workflow?</h2>
+            <p className="text-blue-100 mb-8 text-lg">
+              Join developers who ship better code with DevMind.
+            </p>
+            <Link href="/auth/register" className="inline-flex items-center gap-2 bg-white text-blue-600 font-bold px-8 py-3.5 rounded-xl hover:bg-blue-50 transition-colors">
+              Get Started Free <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t py-10 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Brain className="w-5 h-5 text-blue-600" />
+            <span className="font-semibold">DevMind</span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} DevMind. Built for placement & internship portfolios.
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -1,0 +1,326 @@
+// backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// USER & AUTH
+// ─────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  username      String?   @unique
+  avatar        String?
+  password      String?   // null for OAuth users
+  githubId      String?   @unique
+  role          UserRole  @default(MEMBER)
+  plan          Plan      @default(FREE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  ownedWorkspaces   Workspace[]       @relation("WorkspaceOwner")
+  workspaceMembers  WorkspaceMember[]
+  codeReviews       CodeReview[]
+  documents         Document[]
+  bugs              Bug[]             @relation("BugReporter")
+  assignedBugs      Bug[]             @relation("BugAssignee")
+  comments          Comment[]
+  activities        Activity[]
+  notifications     Notification[]
+  sessions          Session[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  MEMBER
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ─────────────────────────────────────────
+// WORKSPACE
+// ─────────────────────────────────────────
+
+model Workspace {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  logo        String?
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner       User              @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  members     WorkspaceMember[]
+  codeReviews CodeReview[]
+  documents   Document[]
+  bugs        Bug[]
+  activities  Activity[]
+  invitations Invitation[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String          @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole   @default(MEMBER)
+  joinedAt    DateTime        @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@map("workspace_members")
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model Invitation {
+  id          String           @id @default(cuid())
+  email       String
+  workspaceId String
+  role        WorkspaceRole    @default(MEMBER)
+  token       String           @unique @default(cuid())
+  status      InvitationStatus @default(PENDING)
+  expiresAt   DateTime
+  createdAt   DateTime         @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("invitations")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+}
+
+// ─────────────────────────────────────────
+// CODE REVIEW
+// ─────────────────────────────────────────
+
+model CodeReview {
+  id          String       @id @default(cuid())
+  title       String
+  language    String
+  code        String       @db.Text
+  status      ReviewStatus @default(PENDING)
+  userId      String
+  workspaceId String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user        User          @relation(fields: [userId], references: [id])
+  workspace   Workspace?    @relation(fields: [workspaceId], references: [id])
+  suggestions Suggestion[]
+  comments    Comment[]
+  activities  Activity[]
+
+  @@map("code_reviews")
+}
+
+enum ReviewStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+model Suggestion {
+  id           String           @id @default(cuid())
+  reviewId     String
+  line         Int?
+  severity     SuggestionSeverity
+  category     String           // "performance", "security", "readability", etc.
+  title        String
+  description  String           @db.Text
+  suggestion   String           @db.Text
+  codeSnippet  String?          @db.Text
+  isApplied    Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+
+  review CodeReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@map("suggestions")
+}
+
+enum SuggestionSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFO
+}
+
+// ─────────────────────────────────────────
+// DOCUMENTATION
+// ─────────────────────────────────────────
+
+model Document {
+  id          String       @id @default(cuid())
+  title       String
+  type        DocType
+  inputCode   String       @db.Text
+  content     String       @db.Text
+  language    String
+  userId      String
+  workspaceId String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id])
+  workspace Workspace? @relation(fields: [workspaceId], references: [id])
+
+  @@map("documents")
+}
+
+enum DocType {
+  README
+  JSDOC
+  DOCSTRING
+  API_DOCS
+  CHANGELOG
+}
+
+// ─────────────────────────────────────────
+// BUG TRACKER
+// ─────────────────────────────────────────
+
+model Bug {
+  id          String      @id @default(cuid())
+  title       String
+  description String      @db.Text
+  status      BugStatus   @default(TODO)
+  priority    BugPriority @default(MEDIUM)
+  labels      String[]
+  order       Int         @default(0)
+  aiSuggestion String?   @db.Text
+  reporterId  String
+  assigneeId  String?
+  workspaceId String
+  dueDate     DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  reporter  User       @relation("BugReporter", fields: [reporterId], references: [id])
+  assignee  User?      @relation("BugAssignee", fields: [assigneeId], references: [id])
+  workspace Workspace  @relation(fields: [workspaceId], references: [id])
+  comments  Comment[]
+  activities Activity[]
+
+  @@map("bugs")
+}
+
+enum BugStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+enum BugPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+// ─────────────────────────────────────────
+// COMMENTS & ACTIVITY
+// ─────────────────────────────────────────
+
+model Comment {
+  id         String   @id @default(cuid())
+  content    String   @db.Text
+  userId     String
+  reviewId   String?
+  bugId      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user   User        @relation(fields: [userId], references: [id])
+  review CodeReview? @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  bug    Bug?        @relation(fields: [bugId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Activity {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  description String
+  userId      String
+  workspaceId String?
+  reviewId    String?
+  bugId       String?
+  createdAt   DateTime     @default(now())
+
+  user      User        @relation(fields: [userId], references: [id])
+  workspace Workspace?  @relation(fields: [workspaceId], references: [id])
+  review    CodeReview? @relation(fields: [reviewId], references: [id])
+  bug       Bug?        @relation(fields: [bugId], references: [id])
+
+  @@map("activities")
+}
+
+enum ActivityType {
+  REVIEW_CREATED
+  REVIEW_COMPLETED
+  DOC_GENERATED
+  BUG_CREATED
+  BUG_UPDATED
+  BUG_CLOSED
+  MEMBER_JOINED
+  MEMBER_INVITED
+  COMMENT_ADDED
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
