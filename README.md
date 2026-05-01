@@ -27,6 +27,67 @@
 | DevOps | Docker, Docker Compose |
  
 ---
+ ## 📦 Getting Started
+ 
+### Prerequisites
+ 
+- Node.js 18+
+- Docker Desktop
+- Anthropic API Key → [console.anthropic.com](https://console.anthropic.com)
+### 1. Clone the repo
+ 
+```bash
+git clone https://github.com/yourusername/devmind-ai.git
+cd devmind-ai
+```
+ 
+### 2. Set up environment variables
+ 
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+```
+ 
+Add your Anthropic API key to `backend/.env`:
+ 
+```env
+DATABASE_URL="postgresql://devmind:devmind123@localhost:5432/devmind"
+JWT_SECRET="your-secret-key"
+ANTHROPIC_API_KEY="your-anthropic-api-key"
+PORT=5000
+```
+ 
+### 3. Start the database
+ 
+```bash
+docker-compose up -d
+```
+ 
+### 4. Run the backend
+ 
+```bash
+cd backend
+npm install
+npx prisma migrate dev --name init
+npx tsx prisma/seed.ts
+npm run dev
+```
+ 
+### 5. Run the frontend
+ 
+```bash
+cd frontend
+npm install
+npm run dev
+```
+ 
+### 6. Open the app
+ 
+```
+http://localhost:3000
+```
+ 
+Demo login: `demo@devmind.ai` / `demo1234` 
  
 ## 📁 Project Structure
  
