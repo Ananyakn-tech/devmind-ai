@@ -122,5 +122,5 @@ devmind/
  
 ## 🙋‍♀️ Author
  
-Built by **Ananya** as a full-stack portfolio project.
+ **Ananya** 
  
